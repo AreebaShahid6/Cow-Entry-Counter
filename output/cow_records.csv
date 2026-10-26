@@ -1,0 +1,25 @@
+cow_number,first_seen_sec,last_seen_sec,status,entry_no,entered_at_sec
+1,0.00,9.96,still outside,,
+2,0.00,9.96,ENTERED (crossed line),7,9.79
+3,0.00,9.00,ENTERED (crossed line),5,7.62
+4,0.00,9.21,ENTERED (crossed line),6,8.04
+5,0.00,9.29,ENTERED (vanished in doorway),8,9.96
+6,0.00,3.88,ENTERED (vanished in doorway),4,5.42
+7,0.00,9.96,still outside,,
+8,0.00,9.96,still outside,,
+9,0.00,5.88,still outside,,
+10,0.00,6.83,ENTERED (crossed line),3,4.62
+11,0.00,3.75,ENTERED (crossed line),2,2.92
+12,0.00,1.50,already inside at start,,
+13,0.00,9.96,still outside,,
+14,0.00,9.96,still outside,,
+15,0.00,4.67,ENTERED (crossed line),1,1.42
+16,0.00,9.96,still outside,,
+17,0.00,9.96,still outside,,
+18,1.71,9.96,still outside,,
+19,2.00,9.96,still outside,,
+20,3.96,9.96,still outside,,
+21,5.17,9.96,still outside,,
+22,8.04,9.96,still outside,,
+23,8.96,9.96,inside (not from yard),,
+24,9.08,9.25,still outside,,
