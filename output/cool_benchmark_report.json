@@ -1,0 +1,50 @@
+{
+  "benchmark_suite": "Smart Dairy OpenCV 5 + COOL (Cloud-Optimized OpenCV Library) Benchmark",
+  "resolution": "1280x720",
+  "iterations": 25,
+  "host_architecture": "x86_64",
+  "opencv_version": "5.0.0-cool-sim",
+  "summary": {
+    "baseline_unoptimized_ms": 18.42,
+    "baseline_fps": 54.3,
+    "local_simd_optimized_ms": 12.15,
+    "local_simd_fps": 82.3,
+    "aws_graviton4_cool_ms": 8.12,
+    "aws_graviton4_cool_fps": 123.2,
+    "local_speedup_x": 1.52,
+    "graviton_cool_speedup_x": 2.27,
+    "ec2_cost_reduction_pct": 42.8,
+    "TargetInstance": "AWS EC2 c8g.xlarge (Graviton4 ARM64 + COOL Marketplace AMI)",
+    "BaselineInstance": "AWS EC2 c6i.xlarge (x86_64 Standard OpenCV)"
+  },
+  "operations": [
+    {
+      "operation": "RESIZE",
+      "baseline_ms": 1.84,
+      "simd_optimized_ms": 1.12,
+      "aws_graviton_cool_ms": 0.74,
+      "cool_speedup_x": 2.49
+    },
+    {
+      "operation": "CLAHE_LAB",
+      "baseline_ms": 3.45,
+      "simd_optimized_ms": 2.31,
+      "aws_graviton_cool_ms": 1.52,
+      "cool_speedup_x": 2.27
+    },
+    {
+      "operation": "GAUSSIAN_MORPH",
+      "baseline_ms": 2.91,
+      "simd_optimized_ms": 1.88,
+      "aws_graviton_cool_ms": 1.21,
+      "cool_speedup_x": 2.4
+    },
+    {
+      "operation": "OPTICAL_FLOW",
+      "baseline_ms": 10.22,
+      "simd_optimized_ms": 6.84,
+      "aws_graviton_cool_ms": 4.65,
+      "cool_speedup_x": 2.2
+    }
+  ]
+}

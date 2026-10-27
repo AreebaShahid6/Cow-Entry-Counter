@@ -1,0 +1,274 @@
+{
+  "agent_name": "SmartDairy-OpenCV5-Bedrock-Agent",
+  "autonomy_mode": "HITL_SUPERVISED",
+  "last_updated_utc": "2026-10-27T05:34:35.008377+00:00",
+  "vision_params": {
+    "clahe_shadow_recovery": true,
+    "yolo_conf_threshold": 0.1,
+    "botsort_track_buffer": 75,
+    "optical_flow_grid_res": "320x180"
+  },
+  "barn_actuators": {
+    "entry_gate_state": "WIDE_RELIEF_OPEN (100%)",
+    "sorting_pen_diverter": "DIVERT_VET_PEN_B (COW #6 APPROVED)",
+    "entry_chute_lighting": "DOORWAY_GUIDANCE_BOOST_95%",
+    "ventilation_fan_rpm": 900
+  },
+  "pending_approvals": [
+    {
+      "approval_id": "hitl-vet-cow9-b3e452",
+      "timestamp_utc": "2026-10-27T05:24:57.103747+00:00",
+      "tool": "isolate_cow_for_vet_inspection",
+      "cow_id": 9,
+      "gait_score": 54.2,
+      "welfare_flag": "IRREGULAR_GAIT",
+      "proposed_action": "Divert COW 9 to Veterinary Health Pen B via pneumatic sorting gate",
+      "reason": "OpenCV 5 Bird's-Eye View (BEV) trajectory analysis flagged COW #9 with IRREGULAR_GAIT (gait_smoothness=54.2/100, speed=0.31 m/s).",
+      "status": "APPROVED_BY_OPERATOR",
+      "resolved_at_utc": "2026-10-27T05:34:32.121811+00:00",
+      "operator_note": "Confirmed via Web Control Center"
+    },
+    {
+      "approval_id": "hitl-vet-cow6-c0348b",
+      "timestamp_utc": "2026-10-27T05:24:57.103788+00:00",
+      "tool": "isolate_cow_for_vet_inspection",
+      "cow_id": 6,
+      "gait_score": 61.5,
+      "welfare_flag": "DOORWAY_HESITATION",
+      "proposed_action": "Divert COW 6 to Veterinary Health Pen B via pneumatic sorting gate",
+      "reason": "OpenCV 5 Bird's-Eye View (BEV) trajectory analysis flagged COW #6 with DOORWAY_HESITATION (gait_smoothness=61.5/100, speed=0.44 m/s).",
+      "status": "APPROVED_BY_OPERATOR",
+      "resolved_at_utc": "2026-10-27T05:34:35.008332+00:00",
+      "operator_note": "Confirmed via Web Control Center"
+    }
+  ],
+  "decision_trace": [
+    {
+      "decision_id": "ag-001-dbf7",
+      "timestamp_utc": "2026-10-27T05:24:57.103259+00:00",
+      "frame": 12,
+      "video_time_sec": 0.5,
+      "loop_stage": "PERCEPTION_SELF_TUNING",
+      "perception_evidence": {
+        "doorway_luminance": 48.6,
+        "yard_to_door_contrast": 3.14,
+        "mean_yolo_confidence": 0.52
+      },
+      "agent_reasoning": "Cows crossing the barn threshold transition from bright outdoor yard into a dark interior doorway, causing bounding-box flicker. Activating OpenCV 5 CLAHE in LAB color space and increasing BoT-SORT track buffer prevents ID switches and missed doorway vanish crossings.",
+      "tool_call": {
+        "tool": "adjust_vision_pipeline",
+        "status": "EXECUTED",
+        "new_params": {
+          "clahe_shadow_recovery": true,
+          "yolo_conf_threshold": 0.08,
+          "botsort_track_buffer": 75,
+          "optical_flow_grid_res": "320x180"
+        },
+        "reason": "OpenCV 5 LAB luminance analysis detected high doorway shadow contrast (door=48.6, ratio=3.14x, avg_conf=52.0%). Enabling CLAHE shadow recovery and extending BoT-SORT occlusion buffer to 75 frames."
+      },
+      "aws_bedrock_trace": {
+        "model": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "live_cloud_call": false,
+        "latency_ms": 14.5
+      }
+    },
+    {
+      "decision_id": "ag-002-e86f",
+      "timestamp_utc": "2026-10-27T05:24:57.103305+00:00",
+      "frame": 12,
+      "video_time_sec": 0.5,
+      "loop_stage": "PHYSICAL_ACTUATION_CONTROL",
+      "perception_evidence": {
+        "congestion_index": 0.34,
+        "doorway_flow_speed": 1.85,
+        "cows_waiting_outside": 15,
+        "cows_entered": 0
+      },
+      "agent_reasoning": "High herd density outside the entrance paired with elevated optical flow turbulence indicates a doorway bottleneck. Widening the pneumatic entry gate and boosting doorway guidance lighting reduces crowding stress and accelerates barn entry throughput.",
+      "tool_call": {
+        "tool": "actuate_barn_entry_gate",
+        "status": "EXECUTED",
+        "actuators": {
+          "entry_gate_state": "WIDE_RELIEF_OPEN (100%)",
+          "sorting_pen_diverter": "MAIN_BARN_HERD",
+          "entry_chute_lighting": "DOORWAY_GUIDANCE_BOOST_95%",
+          "ventilation_fan_rpm": 900
+        },
+        "reason": "OpenCV 5 Farneback Dense Optical Flow measured congestion_index=0.34 (doorway flow=1.85 px/f) with 15 cows queuing outside."
+      },
+      "aws_bedrock_trace": {
+        "model": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "live_cloud_call": false,
+        "latency_ms": 14.5
+      }
+    },
+    {
+      "decision_id": "ag-003-f729",
+      "timestamp_utc": "2026-10-27T05:24:57.103693+00:00",
+      "frame": 95,
+      "video_time_sec": 3.96,
+      "loop_stage": "PERCEPTION_SELF_TUNING",
+      "perception_evidence": {
+        "doorway_luminance": 68.2,
+        "yard_to_door_contrast": 2.18,
+        "mean_yolo_confidence": 0.64
+      },
+      "agent_reasoning": "Cows crossing the barn threshold transition from bright outdoor yard into a dark interior doorway, causing bounding-box flicker. Activating OpenCV 5 CLAHE in LAB color space and increasing BoT-SORT track buffer prevents ID switches and missed doorway vanish crossings.",
+      "tool_call": {
+        "tool": "adjust_vision_pipeline",
+        "status": "EXECUTED",
+        "new_params": {
+          "clahe_shadow_recovery": true,
+          "yolo_conf_threshold": 0.1,
+          "botsort_track_buffer": 75,
+          "optical_flow_grid_res": "320x180"
+        },
+        "reason": "OpenCV 5 LAB luminance analysis detected high doorway shadow contrast (door=68.2, ratio=2.18x, avg_conf=64.0%). Enabling CLAHE shadow recovery and extending BoT-SORT occlusion buffer to 75 frames."
+      },
+      "aws_bedrock_trace": {
+        "model": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "live_cloud_call": false,
+        "latency_ms": 14.5
+      }
+    },
+    {
+      "decision_id": "ag-004-26d0",
+      "timestamp_utc": "2026-10-27T05:24:57.103733+00:00",
+      "frame": 95,
+      "video_time_sec": 3.96,
+      "loop_stage": "PHYSICAL_ACTUATION_CONTROL",
+      "perception_evidence": {
+        "congestion_index": 0.38,
+        "doorway_flow_speed": 2.42,
+        "cows_waiting_outside": 14,
+        "cows_entered": 2
+      },
+      "agent_reasoning": "High herd density outside the entrance paired with elevated optical flow turbulence indicates a doorway bottleneck. Widening the pneumatic entry gate and boosting doorway guidance lighting reduces crowding stress and accelerates barn entry throughput.",
+      "tool_call": {
+        "tool": "actuate_barn_entry_gate",
+        "status": "EXECUTED",
+        "actuators": {
+          "entry_gate_state": "WIDE_RELIEF_OPEN (100%)",
+          "sorting_pen_diverter": "MAIN_BARN_HERD",
+          "entry_chute_lighting": "DOORWAY_GUIDANCE_BOOST_95%",
+          "ventilation_fan_rpm": 900
+        },
+        "reason": "OpenCV 5 Farneback Dense Optical Flow measured congestion_index=0.38 (doorway flow=2.42 px/f) with 14 cows queuing outside."
+      },
+      "aws_bedrock_trace": {
+        "model": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "live_cloud_call": false,
+        "latency_ms": 14.5
+      }
+    },
+    {
+      "decision_id": "ag-005-4d3c",
+      "timestamp_utc": "2026-10-27T05:24:57.103776+00:00",
+      "frame": 95,
+      "video_time_sec": 3.96,
+      "loop_stage": "HITL_WELFARE_INTERVENTION",
+      "perception_evidence": {
+        "cow_id": 9,
+        "gait_score": 54.2,
+        "bev_speed_mps": 0.31,
+        "welfare_flag": "IRREGULAR_GAIT"
+      },
+      "agent_reasoning": "COW #9 exhibits abnormal stride regularity / doorway hesitation in top-down BEV metric space. Because sorting a cow away from the herd impacts farm operations, the agent queues a Human-in-the-Loop (HITL) veterinary sorting request for farm manager confirmation.",
+      "tool_call": {
+        "tool": "isolate_cow_for_vet_inspection",
+        "status": "QUEUED_FOR_HUMAN_APPROVAL",
+        "approval_id": "hitl-vet-cow9-b3e452",
+        "cow_id": 9
+      },
+      "aws_bedrock_trace": {
+        "model": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "live_cloud_call": false,
+        "latency_ms": 14.5
+      }
+    },
+    {
+      "decision_id": "ag-006-43ef",
+      "timestamp_utc": "2026-10-27T05:24:57.103813+00:00",
+      "frame": 95,
+      "video_time_sec": 3.96,
+      "loop_stage": "HITL_WELFARE_INTERVENTION",
+      "perception_evidence": {
+        "cow_id": 6,
+        "gait_score": 61.5,
+        "bev_speed_mps": 0.44,
+        "welfare_flag": "DOORWAY_HESITATION"
+      },
+      "agent_reasoning": "COW #6 exhibits abnormal stride regularity / doorway hesitation in top-down BEV metric space. Because sorting a cow away from the herd impacts farm operations, the agent queues a Human-in-the-Loop (HITL) veterinary sorting request for farm manager confirmation.",
+      "tool_call": {
+        "tool": "isolate_cow_for_vet_inspection",
+        "status": "QUEUED_FOR_HUMAN_APPROVAL",
+        "approval_id": "hitl-vet-cow6-c0348b",
+        "cow_id": 6
+      },
+      "aws_bedrock_trace": {
+        "model": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "live_cloud_call": false,
+        "latency_ms": 14.5
+      }
+    },
+    {
+      "decision_id": "ag-007-0420",
+      "timestamp_utc": "2026-10-27T05:24:57.104246+00:00",
+      "frame": 185,
+      "video_time_sec": 7.71,
+      "loop_stage": "PERCEPTION_SELF_TUNING",
+      "perception_evidence": {
+        "doorway_luminance": 61.0,
+        "yard_to_door_contrast": 2.42,
+        "mean_yolo_confidence": 0.69
+      },
+      "agent_reasoning": "Cows crossing the barn threshold transition from bright outdoor yard into a dark interior doorway, causing bounding-box flicker. Activating OpenCV 5 CLAHE in LAB color space and increasing BoT-SORT track buffer prevents ID switches and missed doorway vanish crossings.",
+      "tool_call": {
+        "tool": "adjust_vision_pipeline",
+        "status": "EXECUTED",
+        "new_params": {
+          "clahe_shadow_recovery": true,
+          "yolo_conf_threshold": 0.1,
+          "botsort_track_buffer": 75,
+          "optical_flow_grid_res": "320x180"
+        },
+        "reason": "OpenCV 5 LAB luminance analysis detected high doorway shadow contrast (door=61.0, ratio=2.42x, avg_conf=69.0%). Enabling CLAHE shadow recovery and extending BoT-SORT occlusion buffer to 75 frames."
+      },
+      "aws_bedrock_trace": {
+        "model": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "live_cloud_call": false,
+        "latency_ms": 14.5
+      }
+    },
+    {
+      "decision_id": "ag-008-40ad",
+      "timestamp_utc": "2026-10-27T05:24:57.104280+00:00",
+      "frame": 185,
+      "video_time_sec": 7.71,
+      "loop_stage": "PHYSICAL_ACTUATION_CONTROL",
+      "perception_evidence": {
+        "congestion_index": 0.29,
+        "doorway_flow_speed": 2.1,
+        "cows_waiting_outside": 11,
+        "cows_entered": 5
+      },
+      "agent_reasoning": "High herd density outside the entrance paired with elevated optical flow turbulence indicates a doorway bottleneck. Widening the pneumatic entry gate and boosting doorway guidance lighting reduces crowding stress and accelerates barn entry throughput.",
+      "tool_call": {
+        "tool": "actuate_barn_entry_gate",
+        "status": "EXECUTED",
+        "actuators": {
+          "entry_gate_state": "WIDE_RELIEF_OPEN (100%)",
+          "sorting_pen_diverter": "MAIN_BARN_HERD",
+          "entry_chute_lighting": "DOORWAY_GUIDANCE_BOOST_95%",
+          "ventilation_fan_rpm": 900
+        },
+        "reason": "OpenCV 5 Farneback Dense Optical Flow measured congestion_index=0.29 (doorway flow=2.10 px/f) with 11 cows queuing outside."
+      },
+      "aws_bedrock_trace": {
+        "model": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "live_cloud_call": false,
+        "latency_ms": 14.5
+      }
+    }
+  ]
+}

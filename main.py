@@ -1,21 +1,27 @@
 """
 =====================================================================
-  SMART DAIRY  |  AI Cow Entry Counter
-  YOLO26 detection + BoT-SORT tracking + line-crossing counter
-  + live movement heatmap + LinkedIn-ready dashboard video
+  SMART DAIRY  |  AI Cow Entry Counter & Agentic Vision System
+  OpenCV AI Competition 2026, powered by AWS
+  OpenCV 5 + COOL (Graviton) + YOLO26 + BoT-SORT + AWS Bedrock Agent
 ---------------------------------------------------------------------
   Folder layout
       main.py
+      opencv5_cool_engine.py      <- OpenCV 5 & COOL benchmark engine
+      agentic_vision.py           <- Perception-Decision-Action loop
+      aws_integration.py          <- AWS S3, DynamoDB, CloudWatch, Bedrock
+      web_app.py                  <- Interactive Web Endpoint & API
       requirements.txt
       video/your_video.mp4        <- put your video here
       output/                     <- created automatically
 
   Run
       pip install -r requirements.txt
-      python main.py                  # process the video
+      python main.py                  # process the video + AWS & Agentic loop
       python main.py --pick-line      # optional: click a new entry line
       python main.py --no-show        # faster, no preview window
-=====================================================================
+      python main.py --benchmark-cool # run COOL Graviton performance benchmark
+      python web_app.py               # launch working web endpoint on port 8000
+====================================================================
 """
 import argparse
 import csv
@@ -30,6 +36,10 @@ from collections import deque
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
+
+from agentic_vision import AgenticVisionController
+from aws_integration import AWSCloudManager
+from opencv5_cool_engine import OpenCV5Engine, run_cool_benchmark
 
 # ------------------------------------------------------------------ #
 #  CONFIG
@@ -342,6 +352,14 @@ class CowCounter:
         self.series_count, self.series_view = [], []
         self.conf_hist = deque(maxlen=300)
 
+        # ---- OpenCV 5 + COOL Engine, AWS Cloud Manager, and Agentic Vision Controller ----
+        self.cv5_engine = OpenCV5Engine(width=self.W, height=self.H, enable_cool_opt=True)
+        self.aws = AWSCloudManager(output_dir=OUTPUT_DIR)
+        self.agent = AgenticVisionController(aws_manager=self.aws, output_dir=OUTPUT_DIR)
+        self.latest_lighting = {"doorway_luminance": 65.0, "yard_luminance": 150.0, "contrast_ratio": 2.3}
+        self.latest_flow = {"mean_flow_speed": 0.0, "doorway_flow_speed": 0.0, "congestion_index": 0.0}
+        self.latest_welfare = {"average_gait_score": 95.0, "cow_locomotion": {}}
+
         name = os.path.basename(args.model).replace(".pt", "")
         self.model_label = (name[:6].upper() + "-" + name[6:].upper()) if name.lower().startswith("yolo26") and len(name) > 6 else name.upper()
 
@@ -426,8 +444,11 @@ class CowCounter:
         cow["pending"] = False
         cow["how"] = how
         cow["entry_no"] = self.count
-        self.events.append({"no": self.count, "cow": cow["disp"], "track_id": cow["tid"],
-                            "frame": self.fidx, "time": self.fidx / self.fps, "box": box.copy(), "how": how})
+        ev_obj = {"no": self.count, "cow": cow["disp"], "track_id": cow["tid"],
+                  "frame": self.fidx, "time": self.fidx / self.fps, "box": box.copy(), "how": how}
+        self.events.append(ev_obj)
+        gait_info = self.latest_welfare.get("cow_locomotion", {}).get(cow["disp"])
+        self.aws.put_cow_entry_event(ev_obj, gait_info=gait_info)
         self.pops.append((np.array(p, float), self.fidx))
         self.flash_until = self.fidx + int(0.35 * self.fps)
         self.bump_until = self.fidx + int(0.45 * self.fps)
@@ -564,7 +585,7 @@ class CowCounter:
         tl.add("SMART DAIRY", (84, 14), 28, C["accent"], True)
         w = TextLayer.width("SMART DAIRY", 28, True)
         tl.add("AI COW ENTRY ANALYTICS", (84 + w + 14, 14), 28, C["text"], True)
-        tl.add("YOLO26 detection  •  BoT-SORT multi-object tracking  •  Line-crossing counter  •  Movement heatmap",
+        tl.add("OpenCV 5 + COOL (AWS Graviton)  •  YOLO26 + BoT-SORT  •  AWS Bedrock Agentic Vision Loop",
                (84, 52), 15, C["muted"])
 
         # video frame
@@ -823,7 +844,10 @@ class CowCounter:
     def run(self):
         os.makedirs(OUTPUT_DIR, exist_ok=True)
         out_path = os.path.join(OUTPUT_DIR, "cow_counter_dashboard.mp4")
-        writer = cv2.VideoWriter(out_path, cv2.VideoWriter_fourcc(*"mp4v"), self.fps, (OUT_W, OUT_H))
+        # Prefer H.264 ('avc1') so HTML5 browsers can play the MP4 directly; fallback to 'mp4v'
+        writer = cv2.VideoWriter(out_path, cv2.VideoWriter_fourcc(*"avc1"), self.fps, (OUT_W, OUT_H))
+        if not writer.isOpened():
+            writer = cv2.VideoWriter(out_path, cv2.VideoWriter_fourcc(*"mp4v"), self.fps, (OUT_W, OUT_H))
         show = not self.args.no_show
         win = "Smart Dairy - Cow Counter (press Q to stop)"
         if show:
@@ -837,8 +861,31 @@ class CowCounter:
             if not ok:
                 break
             self.fidx += 1
-            dets = self.detect(frame)
+            # 1. OpenCV 5 + COOL Preprocessing & Dense Optical Flow Analysis
+            proc_frame, self.latest_lighting = self.cv5_engine.enhance_doorway_lighting(
+                frame, apply_clahe=self.agent.vision_params.get("clahe_shadow_recovery", False)
+            )
+            self.latest_flow = self.cv5_engine.analyze_crowd_optical_flow(frame, self.A, self.B)
+
+            # 2. YOLO26 Detection & BoT-SORT Multi-Object Tracking
+            dets = self.detect(proc_frame)
             self.update(dets)
+
+            # 3. OpenCV 5 BEV Homography Locomotion & Agentic Vision Loop
+            self.latest_welfare = self.cv5_engine.evaluate_cow_gait_and_welfare(self.cows, self.fps)
+            avg_c = (sum(self.conf_hist) / len(self.conf_hist)) if self.conf_hist else 0.65
+            self.agent.step(
+                frame_idx=self.fidx,
+                video_time_sec=self.fidx / self.fps,
+                entered_count=self.count,
+                in_view_count=self.in_view,
+                outside_count=self.outside,
+                avg_conf=avg_c,
+                lighting_metrics=self.latest_lighting,
+                flow_metrics=self.latest_flow,
+                welfare_metrics=self.latest_welfare,
+            )
+
             canvas = self.render(frame, dets)
             writer.write(canvas)
             last_frame, last_dets = frame, dets
@@ -848,9 +895,17 @@ class CowCounter:
                     print("[INFO] Stopped by user.")
                     break
             if self.fidx % 30 == 0:
-                sp = (self.fidx + 1) / (time.time() - t0)
+                sp = (self.fidx + 1) / max(0.001, (time.time() - t0))
+                self.aws.publish_cloudwatch_metrics(
+                    total_entered=self.count,
+                    in_view=self.in_view,
+                    outside_waiting=self.outside,
+                    congestion_index=self.latest_flow.get("congestion_index", 0.0),
+                    fps_throughput=sp,
+                )
                 print(f"  frame {self.fidx + 1}/{self.total or '?'}  |  in view {self.in_view}"
-                      f"  |  entered {self.count}  |  {sp:.1f} fps")
+                      f"  |  entered {self.count}  |  agent actions {len(self.agent.decision_trace)}"
+                      f"  |  {sp:.1f} fps")
 
         if last_frame is not None:
             self.check_door_losses(final=True)
@@ -865,14 +920,27 @@ class CowCounter:
         self.save_csv()
         rec = self.save_cow_records()
 
-        print("\n" + "=" * 52)
-        print(f"  TOTAL COWS ENTERED : {self.count}")
-        print(f"  TRACK IDs USED     : {self.next_disp - 1}")
-        print(f"  Dashboard video    : {out_path}")
-        print(f"  Heatmap image      : {os.path.join(OUTPUT_DIR, 'heatmap_final.png')}")
-        print(f"  Entry log (CSV)    : {os.path.join(OUTPUT_DIR, 'entries.csv')}")
-        print(f"  Every cow record   : {rec}")
-        print("=" * 52)
+        # Sync final artifacts & state to AWS S3 / DynamoDB / local mirror
+        hm_path = os.path.join(OUTPUT_DIR, "heatmap_final.png")
+        csv_path = os.path.join(OUTPUT_DIR, "entries.csv")
+        self.aws.upload_artifact_to_s3(out_path)
+        self.aws.upload_artifact_to_s3(hm_path)
+        self.aws.upload_artifact_to_s3(csv_path)
+        self.aws.upload_artifact_to_s3(rec)
+        agent_log_path = self.agent.save_state()
+        aws_ledger_path = self.aws.save_ledger()
+
+        print("\n" + "=" * 62)
+        print(f"  TOTAL COWS ENTERED     : {self.count}")
+        print(f"  TRACK IDs USED         : {self.next_disp - 1}")
+        print(f"  AGENTIC DECISIONS      : {len(self.agent.decision_trace)}")
+        print(f"  Dashboard video        : {out_path}")
+        print(f"  Heatmap image          : {hm_path}")
+        print(f"  Entry log (CSV)        : {csv_path}")
+        print(f"  Every cow record       : {rec}")
+        print(f"  Agentic Vision trace   : {agent_log_path}")
+        print(f"  AWS Cloud ledger       : {aws_ledger_path}")
+        print("=" * 62)
 
     def save_heatmap(self, frame):
         hm_col, hm_n = self.heat_maps()
@@ -916,14 +984,25 @@ class CowCounter:
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Smart Dairy - AI cow entry counter")
+    ap = argparse.ArgumentParser(description="Smart Dairy - AI cow entry counter (OpenCV 5 + COOL + AWS + Agentic Vision)")
     ap.add_argument("--video", default=None, help="video path (default: video/your_video.*)")
     ap.add_argument("--model", default=MODEL_NAME, help="yolo26n/s/m/l/x .pt")
     ap.add_argument("--imgsz", type=int, default=IMGSZ)
     ap.add_argument("--conf", type=float, default=DET_CONF)
     ap.add_argument("--no-show", action="store_true", help="don't open the preview window")
     ap.add_argument("--pick-line", action="store_true", help="click a new entry line on the first frame")
+    ap.add_argument("--benchmark-cool", action="store_true", help="run OpenCV 5 + COOL (AWS Graviton) benchmark and save report")
     args = ap.parse_args()
+
+    if args.benchmark_cool:
+        os.makedirs(OUTPUT_DIR, exist_ok=True)
+        res = run_cool_benchmark()
+        out_bench = os.path.join(OUTPUT_DIR, "cool_benchmark_report.json")
+        with open(out_bench, "w") as f:
+            json.dump(res, f, indent=2)
+        print(json.dumps(res, indent=2))
+        print(f"\n[OK] Saved COOL benchmark report to {out_bench}")
+        return
 
     if args.pick_line:
         pick_line(find_video(args.video))

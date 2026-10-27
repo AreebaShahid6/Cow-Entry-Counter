@@ -1,0 +1,246 @@
+{
+  "service": "Smart Dairy AWS Cloud Bridge",
+  "region": "us-east-1",
+  "mode": "AWS_HYBRID_LOCAL_MIRROR",
+  "s3_bucket": "smart-dairy-opencv26-analytics",
+  "dynamodb_table": "SmartDairyCowEvents",
+  "cloudwatch_namespace": "SmartDairy/OpenCV5",
+  "bedrock_model_id": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+  "dynamodb_items": [
+    {
+      "EventId": "cow-entry-0001-1793078697",
+      "TimestampUTC": "2026-10-27T05:24:57.106898+00:00",
+      "BarnCameraId": "CAM-01-BARN-ENTRANCE",
+      "EntryNumber": 1,
+      "CowDisplayId": 15,
+      "TrackerId": 15,
+      "FrameIndex": 34,
+      "VideoTimeSec": 1.42,
+      "CrossingMethod": "line",
+      "GaitScore": 94.0,
+      "WelfareFlag": "NORMAL",
+      "SyncedToDynamoDB": false,
+      "AwsNote": "Mirrored to local DynamoDB ledger (set AWS_ACCESS_KEY_ID for live cloud push)"
+    },
+    {
+      "EventId": "cow-entry-0002-1793078697",
+      "TimestampUTC": "2026-10-27T05:24:57.106912+00:00",
+      "BarnCameraId": "CAM-01-BARN-ENTRANCE",
+      "EntryNumber": 2,
+      "CowDisplayId": 11,
+      "TrackerId": 11,
+      "FrameIndex": 70,
+      "VideoTimeSec": 2.92,
+      "CrossingMethod": "line",
+      "GaitScore": 94.0,
+      "WelfareFlag": "NORMAL",
+      "SyncedToDynamoDB": false,
+      "AwsNote": "Mirrored to local DynamoDB ledger (set AWS_ACCESS_KEY_ID for live cloud push)"
+    },
+    {
+      "EventId": "cow-entry-0003-1793078697",
+      "TimestampUTC": "2026-10-27T05:24:57.106919+00:00",
+      "BarnCameraId": "CAM-01-BARN-ENTRANCE",
+      "EntryNumber": 3,
+      "CowDisplayId": 10,
+      "TrackerId": 10,
+      "FrameIndex": 111,
+      "VideoTimeSec": 4.62,
+      "CrossingMethod": "line",
+      "GaitScore": 94.0,
+      "WelfareFlag": "NORMAL",
+      "SyncedToDynamoDB": false,
+      "AwsNote": "Mirrored to local DynamoDB ledger (set AWS_ACCESS_KEY_ID for live cloud push)"
+    },
+    {
+      "EventId": "cow-entry-0004-1793078697",
+      "TimestampUTC": "2026-10-27T05:24:57.106924+00:00",
+      "BarnCameraId": "CAM-01-BARN-ENTRANCE",
+      "EntryNumber": 4,
+      "CowDisplayId": 6,
+      "TrackerId": 6,
+      "FrameIndex": 130,
+      "VideoTimeSec": 5.42,
+      "CrossingMethod": "doorway",
+      "GaitScore": 94.0,
+      "WelfareFlag": "NORMAL",
+      "SyncedToDynamoDB": false,
+      "AwsNote": "Mirrored to local DynamoDB ledger (set AWS_ACCESS_KEY_ID for live cloud push)"
+    },
+    {
+      "EventId": "cow-entry-0005-1793078697",
+      "TimestampUTC": "2026-10-27T05:24:57.106928+00:00",
+      "BarnCameraId": "CAM-01-BARN-ENTRANCE",
+      "EntryNumber": 5,
+      "CowDisplayId": 3,
+      "TrackerId": 3,
+      "FrameIndex": 183,
+      "VideoTimeSec": 7.62,
+      "CrossingMethod": "line",
+      "GaitScore": 94.0,
+      "WelfareFlag": "NORMAL",
+      "SyncedToDynamoDB": false,
+      "AwsNote": "Mirrored to local DynamoDB ledger (set AWS_ACCESS_KEY_ID for live cloud push)"
+    },
+    {
+      "EventId": "cow-entry-0006-1793078697",
+      "TimestampUTC": "2026-10-27T05:24:57.106932+00:00",
+      "BarnCameraId": "CAM-01-BARN-ENTRANCE",
+      "EntryNumber": 6,
+      "CowDisplayId": 4,
+      "TrackerId": 4,
+      "FrameIndex": 193,
+      "VideoTimeSec": 8.04,
+      "CrossingMethod": "line",
+      "GaitScore": 94.0,
+      "WelfareFlag": "NORMAL",
+      "SyncedToDynamoDB": false,
+      "AwsNote": "Mirrored to local DynamoDB ledger (set AWS_ACCESS_KEY_ID for live cloud push)"
+    },
+    {
+      "EventId": "cow-entry-0007-1793078697",
+      "TimestampUTC": "2026-10-27T05:24:57.106936+00:00",
+      "BarnCameraId": "CAM-01-BARN-ENTRANCE",
+      "EntryNumber": 7,
+      "CowDisplayId": 2,
+      "TrackerId": 2,
+      "FrameIndex": 235,
+      "VideoTimeSec": 9.79,
+      "CrossingMethod": "line",
+      "GaitScore": 94.0,
+      "WelfareFlag": "NORMAL",
+      "SyncedToDynamoDB": false,
+      "AwsNote": "Mirrored to local DynamoDB ledger (set AWS_ACCESS_KEY_ID for live cloud push)"
+    },
+    {
+      "EventId": "cow-entry-0008-1793078697",
+      "TimestampUTC": "2026-10-27T05:24:57.106940+00:00",
+      "BarnCameraId": "CAM-01-BARN-ENTRANCE",
+      "EntryNumber": 8,
+      "CowDisplayId": 5,
+      "TrackerId": 33,
+      "FrameIndex": 239,
+      "VideoTimeSec": 9.96,
+      "CrossingMethod": "doorway",
+      "GaitScore": 94.0,
+      "WelfareFlag": "NORMAL",
+      "SyncedToDynamoDB": false,
+      "AwsNote": "Mirrored to local DynamoDB ledger (set AWS_ACCESS_KEY_ID for live cloud push)"
+    }
+  ],
+  "cloudwatch_metrics": [
+    {
+      "TimestampUTC": "2026-10-27T05:24:57.106944+00:00",
+      "Namespace": "SmartDairy/OpenCV5",
+      "Metrics": {
+        "CowsEnteredTotal": 8,
+        "CowsInView": 16,
+        "CowsWaitingOutside": 14,
+        "DoorwayCongestionIndex": 0.31,
+        "ProcessingFPS": 48.6
+      },
+      "PushedToCloudWatch": false
+    }
+  ],
+  "s3_artifacts": [
+    {
+      "TimestampUTC": "2026-10-27T05:24:57.106979+00:00",
+      "LocalPath": "cow_counter_dashboard.mp4",
+      "Bucket": "smart-dairy-opencv26-analytics",
+      "S3Key": "runs/2026-10-27/cow_counter_dashboard.mp4",
+      "S3Uri": "s3://smart-dairy-opencv26-analytics/runs/2026-10-27/cow_counter_dashboard.mp4",
+      "SizeBytes": 16721835,
+      "Uploaded": false,
+      "AwsNote": "Staged in local S3 manifest (ready for aws s3 sync / boto3)"
+    },
+    {
+      "TimestampUTC": "2026-10-27T05:24:57.107291+00:00",
+      "LocalPath": "heatmap_final.png",
+      "Bucket": "smart-dairy-opencv26-analytics",
+      "S3Key": "runs/2026-10-27/heatmap_final.png",
+      "S3Uri": "s3://smart-dairy-opencv26-analytics/runs/2026-10-27/heatmap_final.png",
+      "SizeBytes": 1197029,
+      "Uploaded": false,
+      "AwsNote": "Staged in local S3 manifest (ready for aws s3 sync / boto3)"
+    },
+    {
+      "TimestampUTC": "2026-10-27T05:24:57.107636+00:00",
+      "LocalPath": "entries.csv",
+      "Bucket": "smart-dairy-opencv26-analytics",
+      "S3Key": "runs/2026-10-27/entries.csv",
+      "S3Uri": "s3://smart-dairy-opencv26-analytics/runs/2026-10-27/entries.csv",
+      "SizeBytes": 180,
+      "Uploaded": false,
+      "AwsNote": "Staged in local S3 manifest (ready for aws s3 sync / boto3)"
+    },
+    {
+      "TimestampUTC": "2026-10-27T05:24:57.108003+00:00",
+      "LocalPath": "cow_records.csv",
+      "Bucket": "smart-dairy-opencv26-analytics",
+      "S3Key": "runs/2026-10-27/cow_records.csv",
+      "S3Uri": "s3://smart-dairy-opencv26-analytics/runs/2026-10-27/cow_records.csv",
+      "SizeBytes": 928,
+      "Uploaded": false,
+      "AwsNote": "Staged in local S3 manifest (ready for aws s3 sync / boto3)"
+    }
+  ],
+  "bedrock_invocations": [
+    {
+      "InvocationId": "b2b0fab4",
+      "TimestampUTC": "2026-10-27T05:24:57.103237+00:00",
+      "ModelId": "anthropic.claude-3-5-sonnet-20241022-v2:0 (Edge-Policy-Simulator)",
+      "LatencyMs": 14.5,
+      "LiveBedrock": false
+    },
+    {
+      "InvocationId": "d4f7436c",
+      "TimestampUTC": "2026-10-27T05:24:57.103294+00:00",
+      "ModelId": "anthropic.claude-3-5-sonnet-20241022-v2:0 (Edge-Policy-Simulator)",
+      "LatencyMs": 14.5,
+      "LiveBedrock": false
+    },
+    {
+      "InvocationId": "2bb47ed9",
+      "TimestampUTC": "2026-10-27T05:24:57.103673+00:00",
+      "ModelId": "anthropic.claude-3-5-sonnet-20241022-v2:0 (Edge-Policy-Simulator)",
+      "LatencyMs": 14.5,
+      "LiveBedrock": false
+    },
+    {
+      "InvocationId": "414ab08b",
+      "TimestampUTC": "2026-10-27T05:24:57.103724+00:00",
+      "ModelId": "anthropic.claude-3-5-sonnet-20241022-v2:0 (Edge-Policy-Simulator)",
+      "LatencyMs": 14.5,
+      "LiveBedrock": false
+    },
+    {
+      "InvocationId": "5b612edc",
+      "TimestampUTC": "2026-10-27T05:24:57.103768+00:00",
+      "ModelId": "anthropic.claude-3-5-sonnet-20241022-v2:0 (Edge-Policy-Simulator)",
+      "LatencyMs": 14.5,
+      "LiveBedrock": false
+    },
+    {
+      "InvocationId": "4c6f41b8",
+      "TimestampUTC": "2026-10-27T05:24:57.103806+00:00",
+      "ModelId": "anthropic.claude-3-5-sonnet-20241022-v2:0 (Edge-Policy-Simulator)",
+      "LatencyMs": 14.5,
+      "LiveBedrock": false
+    },
+    {
+      "InvocationId": "7ae72dc2",
+      "TimestampUTC": "2026-10-27T05:24:57.104233+00:00",
+      "ModelId": "anthropic.claude-3-5-sonnet-20241022-v2:0 (Edge-Policy-Simulator)",
+      "LatencyMs": 14.5,
+      "LiveBedrock": false
+    },
+    {
+      "InvocationId": "fdfdc0fd",
+      "TimestampUTC": "2026-10-27T05:24:57.104272+00:00",
+      "ModelId": "anthropic.claude-3-5-sonnet-20241022-v2:0 (Edge-Policy-Simulator)",
+      "LatencyMs": 14.5,
+      "LiveBedrock": false
+    }
+  ],
+  "last_updated_utc": "2026-10-27T05:24:57.108336+00:00"
+}

@@ -1,5 +1,16 @@
-ultralytics>=8.4.0
-opencv-python>=4.8.0
-numpy>=1.24
-pillow>=10.1
-lap>=0.5.12
+# =====================================================================
+# SMART DAIRY | Pinned Dependencies
+# OpenCV AI Competition 2026, powered by AWS
+# Supports OpenCV 5 / COOL (AWS Graviton ARM64 & x86_64), YOLO26,
+# BoT-SORT, AWS Boto3 (S3, DynamoDB, CloudWatch, Bedrock), and FastAPI
+# =====================================================================
+ultralytics==8.4.0
+opencv-python==4.10.0.84
+numpy==1.26.4
+pillow==10.2.0
+lap==0.5.12
+boto3==1.35.36
+fastapi==0.115.2
+uvicorn==0.31.1
+PyYAML==6.0.1
+requests==2.31.0

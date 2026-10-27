@@ -1,0 +1,167 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Smart Dairy - OpenCV AI Competition 2026, powered by AWS.
+  Provisions Amazon S3 Artifact Bucket, Amazon DynamoDB Cow Events Table,
+  IAM Role with Amazon Bedrock + CloudWatch permissions, and an AWS EC2
+  Graviton4 (c8g.xlarge ARM64) host running the Cloud-Optimized OpenCV Library (COOL)
+  and the Smart Dairy Working Web Endpoint.
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: SmartDairyOpenCV26
+  GravitonInstanceType:
+    Type: String
+    Default: m7i-flex.large
+    AllowedValues:
+      - m7i-flex.large
+      - c7i-flex.large
+      - t3.small
+      - c8g.large
+      - c8g.xlarge
+      - c7g.xlarge
+      - t4g.large
+    Description: AWS Graviton ARM64 instance type for COOL acceleration.
+
+  AllowedCidr:
+    Type: String
+    Default: 0.0.0.0/0
+    Description: CIDR allowed to reach the web app on port 80.
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+
+Resources:
+  SmartDairyArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "smart-dairy-opencv26-${AWS::AccountId}-${AWS::Region}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  SmartDairyCowEventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: SmartDairyCowEvents
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: EventId
+          AttributeType: S
+        - AttributeName: TimestampUTC
+          AttributeType: S
+      KeySchema:
+        - AttributeName: EventId
+          KeyType: HASH
+        - AttributeName: TimestampUTC
+          KeyType: RANGE
+
+  SmartDairyInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Policies:
+        - PolicyName: SmartDairyOpenCV5AWSAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !GetAtt SmartDairyArtifactsBucket.Arn
+                  - !Sub "${SmartDairyArtifactsBucket.Arn}/*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource: !GetAtt SmartDairyCowEventsTable.Arn
+              - Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                Resource: "*"
+
+  SmartDairyInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref SmartDairyInstanceRole
+
+  SmartDairySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Smart Dairy web access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref AllowedCidr
+
+  SmartDairyInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref GravitonInstanceType
+      ImageId: !Ref LatestAmiId
+      IamInstanceProfile: !Ref SmartDairyInstanceProfile
+      SecurityGroupIds:
+        - !GetAtt SmartDairySecurityGroup.GroupId
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 40
+            VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          exec > /var/log/smart-dairy-init.log 2>&1
+          set -x
+          dnf install -y docker
+          systemctl enable --now docker
+          mkdir -p /opt/app && cd /opt/app
+          # Wait for deploy.sh to upload the code bundle (up to ~30 min)
+          for i in $(seq 1 180); do
+            aws s3 cp s3://${SmartDairyArtifactsBucket}/deploy/app.tgz app.tgz && break
+            sleep 10
+          done
+          tar xzf app.tgz
+          docker build -t smart-dairy .
+          docker run -d --restart always --name smart-dairy -p 80:8000 \
+            -e AWS_REGION=${AWS::Region} \
+            -e SMART_DAIRY_S3_BUCKET=${SmartDairyArtifactsBucket} \
+            smart-dairy
+
+Outputs:
+  WebsiteURL:
+    Description: Public URL of the Smart Dairy web app (ready a few minutes after the code upload)
+    Value: !Sub "http://${SmartDairyInstance.PublicDnsName}"
+  S3BucketName:
+    Description: S3 Bucket for Smart Dairy Dashboard Videos, Heatmaps, and CSVs
+    Value: !Ref SmartDairyArtifactsBucket
+  DynamoDBTableName:
+    Description: DynamoDB Table for Real-Time Cow Crossing & Gait Welfare Telemetry
+    Value: !Ref SmartDairyCowEventsTable
+  CloudWatchNamespace:
+    Description: Custom CloudWatch Metrics Namespace
+    Value: SmartDairy/OpenCV5
+
